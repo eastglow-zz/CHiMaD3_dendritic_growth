@@ -1,4 +1,4 @@
-Points:0,Points:1,Points:2,vtkOriginalIndices,__vtkIsSelected__,vtkCompositeIndexArray
+x,y,z,vtkOriginalIndices,__vtkIsSelected__,vtkCompositeIndexArray
 198.349,0,0,0,0,2
 198.295,1,0,1,0,2
 198.126,2,0,2,0,2

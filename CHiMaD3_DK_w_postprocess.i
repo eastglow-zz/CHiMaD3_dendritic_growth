@@ -211,23 +211,23 @@
   [../]
 
   # For the postprocess
-  [./solid_volume]
-    type = ParsedMaterial
-    f_name = solid_volume_per_element
-    args = 'p'
-    function = '(1 + p)/2'
-  [../]
-  [./element_volume]
-    type = ParsedMaterial
-    f_name = volume_per_element
-    function = '1'
-  [../]
+  # [./solid_volume]
+  #   type = ParsedMaterial
+  #   f_name = solid_volume_per_element
+  #   args = 'p'
+  #   function = '(1 + p)/2'
+  # [../]
+  # [./element_volume]
+  #   type = ParsedMaterial
+  #   f_name = volume_per_element
+  #   function = '1'
+  # [../]
   [./FEdensity_material]
     type = ParsedMaterial
     f_name = f_density
     material_property_names = 'Wsq_aniso f_doublewell lambda_U h'
     args = 'p u dpx dpy'
-    function = '0.5*Wsq_aniso*(dpx^2+dpy^2 + f_doublewell + lambda_U*h)'
+    function = '0.5*Wsq_aniso*(dpx^2+dpy^2) + f_doublewell + lambda_U*h'
     #outputs = exodus
   [../]
 []
@@ -245,10 +245,10 @@
   solve_type = PJFNK
   scheme = bdf2
 
-  petsc_options_iname = '-pc_type -sub_pc_type'
-  petsc_options_value = 'asm      lu'
-  #petsc_options_iname = '-pc_type -pc_asm_overlap'
-  #petsc_options_value = 'asm      1'
+  #petsc_options_iname = '-pc_type -sub_pc_type'
+  #petsc_options_value = 'asm      lu'
+  petsc_options_iname = '-pc_type -pc_asm_overlap'
+  petsc_options_value = 'asm      1'
 
   l_max_its = 20
   l_tol = 1e-4
@@ -277,10 +277,10 @@
 #[]
 
 [Postprocessors]
-  [./Total_solid_volume]
-    type = ElementIntegralMaterialProperty
-    mat_prop = solid_volume_per_element
-  [../]
+  # [./Total_solid_volume]
+  #   type = ElementIntegralMaterialProperty
+  #   mat_prop = solid_volume_per_element
+  # [../]
   #[./Total_volume]
   #  type = ElementIntegralMaterialProperty
   #  mat_prop = volume_per_element
@@ -289,13 +289,13 @@
     type = ElementIntegralMaterialProperty
     mat_prop = f_density
   [../]
-  [./Interface_location_along_x_axis]
-    type = FindValueOnLine
-    start_point = '0 0 0'
-    end_point = '960 0 0'
-    target = 0
-    depth = 13
-    tol = 1e-1
-    v = p
-  [../]
+  # [./Interface_location_along_x_axis]
+  #   type = FindValueOnLine
+  #   start_point = '0 0 0'
+  #   end_point = '960 0 0'
+  #   target = 0
+  #   depth = 13
+  #   tol = 1e-1
+  #   v = p
+  # [../]
 []

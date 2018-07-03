@@ -1,6 +1,6 @@
 /*
   This code rearranges the contour data exported from Paraview.
-      -     finds the nearest-distance coordinate from a reference coordinate
+      -     finds the nearest-distance coordinate from a reference coordinate.
 
   Dong-Uk Kim, July 3rd 2018
 */

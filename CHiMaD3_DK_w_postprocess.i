@@ -185,7 +185,7 @@
     f_name = Wsq_aniso
     material_property_names = 'W0 eps4'
     args = 'dpx dpy'
-    function = 'if(eps4 > 0, W0^2 * (1 + eps4 * (dpx^4 + dpy^4 - 6*dpx^2*dpy^2)/(dpx^2 + dpy^2))^2, W0^2)'
+    function = 'if(eps4 > 0, W0^2 * (1 + eps4 * (dpx^4 + dpy^4 - 6*dpx^2*dpy^2)/(dpx^2 + dpy^2)^2)^2, W0^2)'
     derivative_order = 2
     #outputs = exodus
   [../]
@@ -195,7 +195,7 @@
     f_name = tau_aniso
     material_property_names = 'tau0 eps4'
     args = 'dpx dpy'
-    function = 'if(eps4 > 0, tau0 * (1 + eps4 * (dpx^4 + dpy^4 - 6*dpx^2*dpy^2)/(dpx^2 + dpy^2))^2, tau0)'
+    function = 'if(eps4 > 0, tau0 * (1 + eps4 * (dpx^4 + dpy^4 - 6*dpx^2*dpy^2)/(dpx^2 + dpy^2)^2)^2, tau0)'
     derivative_order = 2
     #outputs = exodus
   [../]
@@ -210,18 +210,13 @@
     #outputs = exodus
   [../]
 
-  # For the postprocess
-  # [./solid_volume]
-  #   type = ParsedMaterial
-  #   f_name = solid_volume_per_element
-  #   args = 'p'
-  #   function = '(1 + p)/2'
-  # [../]
-  # [./element_volume]
-  #   type = ParsedMaterial
-  #   f_name = volume_per_element
-  #   function = '1'
-  # [../]
+  #For the postprocess
+  [./solid_volume]
+    type = ParsedMaterial
+    f_name = solid_fraction_per_element
+    args = 'p'
+    function = '(1 + p)/2/960/960'
+  [../]
   [./FEdensity_material]
     type = ParsedMaterial
     f_name = f_density
@@ -277,25 +272,21 @@
 #[]
 
 [Postprocessors]
-  # [./Total_solid_volume]
-  #   type = ElementIntegralMaterialProperty
-  #   mat_prop = solid_volume_per_element
-  # [../]
-  #[./Total_volume]
-  #  type = ElementIntegralMaterialProperty
-  #  mat_prop = volume_per_element
-  #[../]
+  [./Total_solid_fraction]
+    type = ElementIntegralMaterialProperty
+    mat_prop = solid_fraction_per_element
+  [../]
   [./Total_FE]
     type = ElementIntegralMaterialProperty
     mat_prop = f_density
   [../]
-  # [./Interface_location_along_x_axis]
-  #   type = FindValueOnLine
-  #   start_point = '0 0 0'
-  #   end_point = '960 0 0'
-  #   target = 0
-  #   depth = 13
-  #   tol = 1e-1
-  #   v = p
-  # [../]
+  [./Interface_location_along_x_axis]
+    type = FindValueOnLine
+    start_point = '0 0 0'
+    end_point = '960 0 0'
+    target = 0
+    depth = 13
+    tol = 1e-1
+    v = p
+  [../]
 []

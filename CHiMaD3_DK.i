@@ -186,7 +186,7 @@
     f_name = Wsq_aniso
     material_property_names = 'W0 eps4'
     args = 'dpx dpy'
-    function = 'if(eps4 > 0, W0^2 * (1 + eps4 * (dpx^4 + dpy^4 - 6*dpx^2*dpy^2)/(dpx^2 + dpy^2))^2, W0^2)'
+    function = 'if(eps4 > 0, W0^2 * (1 + eps4 * (dpx^4 + dpy^4 - 6*dpx^2*dpy^2)/(dpx^2 + dpy^2)^2)^2, W0^2)'
     derivative_order = 2
     #outputs = exodus
   [../]
@@ -196,7 +196,7 @@
     f_name = tau_aniso
     material_property_names = 'tau0 eps4'
     args = 'dpx dpy'
-    function = 'if(eps4 > 0, tau0 * (1 + eps4 * (dpx^4 + dpy^4 - 6*dpx^2*dpy^2)/(dpx^2 + dpy^2))^2, tau0)'
+    function = 'if(eps4 > 0, tau0 * (1 + eps4 * (dpx^4 + dpy^4 - 6*dpx^2*dpy^2)/(dpx^2 + dpy^2)^2)^2, tau0)'
     derivative_order = 2
     #outputs = exodus
   [../]

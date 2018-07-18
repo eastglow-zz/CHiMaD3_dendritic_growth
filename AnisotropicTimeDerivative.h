@@ -42,6 +42,7 @@ protected:
 
   const unsigned int _nvar;
   const MaterialProperty<Real> & _tau;
+  const Real _gradmag_threshold;
   std::vector<const MaterialProperty<Real> *> _dtau_darg;
 };
 

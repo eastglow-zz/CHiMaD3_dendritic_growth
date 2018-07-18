@@ -2,13 +2,14 @@
 #
 # CHiMaD benchmark problem #3, dendritic growth
 # Dong-Uk Kim
-# 06/20/2018
+# as of 06/20/2018 written
+# as of 07/16/2018 revised
 
 [Mesh]
   type = GeneratedMesh
   dim = 2
-  nx = 960
-  ny = 960
+  nx = 75
+  ny = 75
   xmax = 960
   ymax = 960
 []
@@ -51,6 +52,7 @@
     invalue = 1.0
     outvalue = -1.0
   [../]
+
   [./u_constantIC]
     type = ConstantIC
     variable = u
@@ -86,6 +88,7 @@
     variable = p
     tau_name = tau_aniso
     gradient_component_names = 'dpx dpy'
+    gradmag_threshold = 1e-4
   [../]
   [./InterfacialE]
     type = AnisotropicGradEnergy
@@ -93,6 +96,7 @@
     mob_name = L
     kappa_name = Wsq_aniso
     gradient_component_names = 'dpx dpy'
+    gradmag_threshold = 1e-4
   [../]
   [./localFE]
     type = AllenCahn
@@ -113,6 +117,9 @@
   [./time_derivative_u]
     type = TimeDerivative
     variable = u
+    # type = CoefTimeDerivative
+    # variable = u
+    # Coefficient = 0.1
   [../]
   [./div_grad_mu]
     type = ACInterface
@@ -120,6 +127,8 @@
     mob_name = L
     kappa_name = D
     variable_L = false
+    # type = Diffusion
+    # variable = u
   [../]
   [./Partition_term]
     type = CoupledSwitchingTimeDerivative
@@ -128,6 +137,10 @@
     Fj_names = 'oneovertwo'
     hj_names = 'switching_U'
     args =     'p'
+    # type = CoefCoupledTimeDerivative
+    # variable = u
+    # coef = -0.05
+    # v = p
   [../]
 []
 
@@ -169,7 +182,7 @@
 
   [./constants]
     type = GenericConstantMaterial
-    prop_names  = 'tau0 W0 D  eps0 L oneovertwo'
+    prop_names  = 'tau0 W0 D  eps4 L oneovertwo'
     prop_values = '1    1  10 0.05 1 -0.5'
   [../]
 
@@ -185,7 +198,7 @@
     f_name = Wsq_aniso
     material_property_names = 'W0 eps4'
     args = 'dpx dpy'
-    function = 'if(eps4 > 0, W0^2 * (1 + eps4 * (dpx^4 + dpy^4 - 6*dpx^2*dpy^2)/(dpx^2 + dpy^2)^2)^2, W0^2)'
+    function = 'if(sqrt(dpx^2 + dpy^2) > 1e-5, W0^2 * (1 + eps4 * (dpx^4 + dpy^4 - 6*dpx^2*dpy^2)/(dpx^2 + dpy^2)^2)^2, W0^2)'
     derivative_order = 2
     #outputs = exodus
   [../]
@@ -195,20 +208,22 @@
     f_name = tau_aniso
     material_property_names = 'tau0 eps4'
     args = 'dpx dpy'
-    function = 'if(eps4 > 0, tau0 * (1 + eps4 * (dpx^4 + dpy^4 - 6*dpx^2*dpy^2)/(dpx^2 + dpy^2)^2)^2, tau0)'
+    function = 'if(sqrt(dpx^2 + dpy^2) > 1e-5, tau0 * (1 + eps4 * (dpx^4 + dpy^4 - 6*dpx^2*dpy^2)/(dpx^2 + dpy^2)^2)^2, tau0)'
     derivative_order = 2
     #outputs = exodus
   [../]
 
-  #To prevent divided by zero
-  [./eps4]
-    type = ParsedMaterial
-    f_name = eps4
-    material_property_names = 'eps0'
-    args = 'p'
-    function = 'if((0.9-p)*(0.9+p) >= 0, eps0, 0)'
-    #outputs = exodus
-  [../]
+  # #To prevent divided by zero
+  # [./eps4]
+  #   type = ParsedMaterial
+  #   f_name = eps4
+  #   material_property_names = 'eps0'
+  #   #args = 'p'
+  #   #function = 'if((0.99-p)*(0.99+p) >= 0, eps0, 0)'
+  #   args = 'dpx dpy'
+  #   function = 'if(sqrt(dpx^2 + dpy^2) > 1e-5, eps0, 0)'
+  #   #outputs = exodus
+  # [../]
 
   #For the postprocess
   [./solid_volume]
@@ -240,25 +255,40 @@
   solve_type = PJFNK
   scheme = bdf2
 
-  #petsc_options_iname = '-pc_type -sub_pc_type'
-  #petsc_options_value = 'asm      lu'
-  petsc_options_iname = '-pc_type -pc_asm_overlap'
-  petsc_options_value = 'asm      1'
+  # petsc_options_iname = '-pc_type -sub_pc_type'
+  # petsc_options_value = 'asm      lu'
+  # petsc_options_iname = '-pc_type -pc_asm_overlap'
+  # petsc_options_value = 'asm      1'
+
+  petsc_options_iname = '-pc_type -pc_factor_mat_solver_package'
+  petsc_options_value = 'lu superlu_dist'
+
 
   l_max_its = 20
   l_tol = 1e-4
-  nl_max_its = 15
+  nl_max_its = 20
   nl_rel_tol = 1e-8
+  nl_abs_tol = 1e-11
 
   [./TimeStepper]
     type = IterationAdaptiveDT
-    dt = 0.5
-    growth_factor = 2
+    dt = 0.003
+    growth_factor = 1.2
     cutback_factor = 0.8
-    optimal_iterations = 20
-    iteration_window = 10
+    #optimal_iterations = 4
+    #iteration_window = 4
   [../]
+  dtmax = 0.3
   end_time = 1500
+
+  [./Adaptivity]
+    initial_adaptivity = 5
+    max_h_level = 5
+    refine_fraction = 0.95
+    coarsen_fraction = 0.10
+    weight_names = 'p u'
+    weight_values = '1.0 1.0'
+  [../]
 []
 
 [Outputs]
@@ -267,9 +297,9 @@
   print_perf_log = true
 []
 
-#[Debug]
+# [Debug]
 #  show_var_residual_norms = true
-#[]
+# []
 
 [Postprocessors]
   [./Total_solid_fraction]
@@ -285,7 +315,7 @@
     start_point = '0 0 0'
     end_point = '960 0 0'
     target = 0
-    depth = 13
+    depth = 15
     tol = 1e-1
     v = p
   [../]

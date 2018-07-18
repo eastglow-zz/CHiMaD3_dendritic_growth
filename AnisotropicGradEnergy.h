@@ -38,6 +38,7 @@ protected:
   const MaterialProperty<Real> & _L;
   /// Gradient energy coefficient; 0th order derivative from Material data
   const MaterialProperty<Real> & _kappa;
+  const Real _gradmag_threshold;
   /// Gradient energy coefficient; 1st order derivatives from Material data
   std::vector<const MaterialProperty<Real> *> _dkappa_darg;
   /// Gradient energy coefficient; 2nd order derivatives from Material data

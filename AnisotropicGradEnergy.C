@@ -22,6 +22,7 @@ validParams<AnisotropicGradEnergy>()
   params.addParam<MaterialPropertyName>("mob_name","L","The mobility used with the kernel, assumed as a constant");
   params.addParam<MaterialPropertyName>("kappa_name","kappa_op","Orientation dependent anisotropy function in terms of gradient components of aeta, which can be provided by DerivativeParsedMaterial with derivative_order 2");
   params.addCoupledVar("gradient_component_names","Name vector of gradient components of aeta, arguments of the kappa function, in x y z order, e.g.) in 2D, dpx dpy, in 3D, dpx dpy dpz, where dpx, dpy, and dpz are defined as AuxVariables(FIRST order, MONOMIAL family) and calculated by VariableGradientComponent AuxKernel (execute_on = LINEAR)");
+  params.addParam<Real>("gradmag_threshold",1e-7,"Threshold value to turn on anisotropy term calculations; grad_mag > thres ? anisotropic calc. : isotropic calc.");
   return params;
 }
 
@@ -30,6 +31,7 @@ AnisotropicGradEnergy::AnisotropicGradEnergy(const InputParameters & parameters)
   _nvar(_coupled_moose_vars.size()),
   _L(getMaterialProperty<Real>("mob_name")),
   _kappa(getMaterialProperty<Real>("kappa_name")),
+  _gradmag_threshold(getParam<Real>("gradmag_threshold")),
   _dkappa_darg(_nvar),
   _d2kappa_darg2(_nvar)
 {
@@ -155,7 +157,7 @@ AnisotropicGradEnergy::computeQpResidual()
 {
   Real grad_u_sq = _grad_u[_qp] * _grad_u[_qp];
   Real grad_u_dot_grad_test = _grad_u[_qp] * _grad_test[_i][_qp];
-  if (1)
+  if (_nvar > 0 && grad_u_sq > _gradmag_threshold * _gradmag_threshold)
   {
     RealGradient dkappa_dgradaeta = get_dkappa_darg(_qp);
     Real dkappa_dgradaeta_dot_grad_test = dkappa_dgradaeta * _grad_test[_i][_qp];
@@ -172,7 +174,7 @@ AnisotropicGradEnergy::computeQpJacobian()
 
   Real grad_u_sq = _grad_u[_qp] * _grad_u[_qp];
   Real kappa_gradphi_dot_grad_test = _kappa[_qp] * _grad_phi[_j][_qp] * _grad_test[_i][_qp];
-  if (1)
+  if (_nvar > 0 && grad_u_sq > _gradmag_threshold * _gradmag_threshold)
   {
     RealGradient dkappa_dgradaeta = get_dkappa_darg(_qp);
     Real dkappa_dgradaeta_dot_grad_phi = dkappa_dgradaeta * _grad_phi[_j][_qp];

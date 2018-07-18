@@ -1,7 +1,7 @@
 path = '/Users/donguk.kim/projects/dukim_work/CHiMaD3_dendritic_growth/contour_line_sort/';
 fname= 'phase_field_1500.csv';
 %fname= 'CHiMaD3_DK_contour_test.csv';
-numrow = 431;
+numrow = 1305;
 numcol = 2;
 %numcol = 6;
 colIDforx = 1;
@@ -19,5 +19,5 @@ xlabel('x', 'fontsize', 22);
 ylabel('y', 'fontsize', 22);
 axis equal;
 set(gca,'fontsize', 22);
-xlim([0 200]);
-ylim([0 200]);
+xlim([0 960]);
+ylim([0 960]);

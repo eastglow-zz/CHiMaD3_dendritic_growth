@@ -13,12 +13,15 @@
 
 int main()
 {
-  int nline = 431;
-  int ndat = 430;
+  int nline = 1305;
+  int ndat = nline;
   char datfname[100];
   char outfilename[200];
-  sprintf(datfname, "CHiMaD3_DK_contour_test.csv"); //input data
-  sprintf(outfilename, "phase_field_1500.csv");  //output data
+  sprintf(datfname, "Contour_as_exported.csv"); //input data
+  sprintf(outfilename, "phase_field_1500_1.csv");  //output data
+  double xinit = 0.0;
+  double yinit = 400.0;
+  double zinit = 0.0;
   ////////////////////
   FILE *fin;
   double *xin, *yin, *zin, *d1, *d2, *d3;
@@ -41,33 +44,43 @@ int main()
   void print_3_darrays(double *a1, double *a2, double *a3, int nsize);
   void pick_mindist_coord(double *xout, double *yout, double xref, double yref, double *xsample, double *ysample, int iref, int istart, int iend);
   void calc_NNdist_arr(double *output, double *xarr, double *yarr, int nsize);
-  void fileout(char *fname, double *x, double *y, int nsize);
+  void fileout(char *fname, double *x, double *y, int ilb, int iub);
   ////////////////////
 
   //data loading and indexing (in order of presence in the file)
   fin = fopen(datfname,"r");
   fscanf(fin,"%s", linebuff);
-  for (int i=0; i<ndat; i++) {
+  for (int i=1; i<ndat; i++) {  //The 0th index is reserved for the initial reference coordinate that user will enter
     fscanf(fin, "%lf,%lf,%lf,%lf,%lf,%lf",&xin[i],&yin[i],&zin[i],&d1[i],&d2[i],&d3[i]);
   }
   fclose(fin);
+
+  //Saving the initial reference coordinate
+  xin[0] = xinit;
+  yin[0] = yinit;
+  zin[0] = zinit;
+
+  //Printing the input data on the screen
   print_3_darrays(xin,yin,zin,ndat);
 
-  //initialization
+  //initialization of xinter and yinter for the forward swipping
   xout[0]=xin[0];
   yout[0]=yin[0];
   
-  //Find the nearest coordinate from i-1 coordinate
+  //Find the nearest coordinate from i-1 coordinate, forward swipping
   for (int i = 1; i<ndat; i++) {
     double xmin, ymin;
-    pick_mindist_coord(&xmin, &ymin, xin[i-1], yin[i-1], xin, yin, i-1, i, ndat-1);
+    int iref = i-1;
+    int iscan_lb = i;
+    int iscan_ub = ndat-1;
+    pick_mindist_coord(&xmin, &ymin, xin[iref], yin[iref], xin, yin, iref, iscan_lb, iscan_ub);
     xout[i] = xmin;
     yout[i] = ymin;
   }
   calc_NNdist_arr(sNNd, xout, yout, ndat);
   print_3_darrays(xout,yout,sNNd,ndat);
 
-  fileout(outfilename, xout,yout,ndat);
+  fileout(outfilename, xout,yout,1,ndat-1);
   
 
   return 0;
@@ -141,13 +154,13 @@ void switching_data(double *x, double *y, int i1, int i2)
   y[i2] = ytmp;
 }
 
-void fileout(char fname[200], double *x, double *y, int nsize)
+void fileout(char fname[200], double *x, double *y, int ilb, int iub)
 {
   FILE *fout;
   
   fout = fopen(fname, "w");
   fprintf(fout,"x,y\n");
-  for (int i=0; i<nsize; i++) {
+  for (int i=ilb; i<=iub; i++) {
     fprintf(fout,"%lf,%lf\n",x[i],y[i]);
   }
   fclose(fout);
